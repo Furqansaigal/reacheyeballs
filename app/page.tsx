@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Check, ChevronDown, Menu, X, CalendarDays, Users, MapPin, ShieldCheck, Target, Sparkles } from 'lucide-react';
 import { siteContent as content } from '@/data/siteContent';
 
@@ -21,6 +21,40 @@ function Button({ href = content.bookingUrl, children = cta, secondary = false }
 
 function Eyebrow({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return <p className={`mb-4 flex items-center gap-2 text-[11px] font-bold tracking-[.16em] ${light ? 'text-[#8ab5ff]' : 'text-[#2564d9]'}`}><span className="h-1.5 w-1.5 bg-current" />{children}</p>;
+}
+
+function AnimatedValue({ value }: { value: string }) {
+  const numberMatch = value.match(/^(\d+)(.*)$/);
+  const [current, setCurrent] = useState(0);
+  const [started, setStarted] = useState(false);
+  const valueRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const node = valueRef.current;
+    if (!node || !numberMatch) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setStarted(true);
+    }, { threshold: 0.4 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [value]);
+
+  useEffect(() => {
+    if (!started || !numberMatch) return;
+    const target = Number(numberMatch[1]);
+    const duration = 1050;
+    const startedAt = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      setCurrent(Math.round((1 - Math.pow(1 - progress, 3)) * target));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [started, value]);
+
+  return <p ref={valueRef} className="text-3xl font-black tracking-[-.06em] text-white sm:text-4xl">{numberMatch ? `${current}${numberMatch[2]}` : value}</p>;
 }
 
 export default function Home() {
@@ -74,7 +108,7 @@ export default function Home() {
 
     <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-24 sm:px-8"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><Eyebrow>HOW IT WORKS</Eyebrow><h2 className="text-4xl font-black tracking-[-.06em] sm:text-5xl">From Click to<br /><span className="text-[#2564d9]">Qualified Appointment.</span></h2></div><p className="max-w-sm text-sm leading-6 text-[#63718a]">A clear, sales-focused workflow from local homeowner targeting to your live sales calendar.</p></div><div className="mt-14 grid gap-8 md:grid-cols-4">{content.process.map(([num, title, text], i) => <article key={num} className="relative border-t-2 border-[#2564d9] pt-5">{i < 3 && <span className="absolute left-10 right-[-2rem] top-[-1px] hidden h-px bg-[#dce5f3] md:block" />}<p className="text-xs font-black tracking-[.15em] text-[#2564d9]">{num}</p><h3 className="mt-8 text-2xl font-black tracking-[-.04em]">{title}</h3><p className="mt-3 text-sm leading-6 text-[#63718a]">{text}</p></article>)}</div></section>
 
-    <section id="results" className="blueprint px-5 py-24 sm:px-8"><div className="mx-auto max-w-7xl"><Eyebrow light>RESULTS THAT MATTER</Eyebrow><div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]"><div><h2 className="text-4xl font-black leading-[.98] tracking-[-.06em] text-white sm:text-5xl">We Don&apos;t Sell Clicks.<br /><span className="text-[#6da2ff]">We Build Sales Opportunities.</span></h2><p className="mt-6 max-w-md text-base leading-7 text-[#b9c6db]">The goal isn&apos;t vanity metrics. It&apos;s more conversations with homeowners who are genuinely considering replacing their windows or doors.</p></div><div className="grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">{content.stats.map(stat => <div key={stat.label} className="bg-[#0d1829] p-7"><p className="text-3xl font-black tracking-[-.06em] text-white sm:text-4xl">{stat.value}</p><p className="mt-4 text-sm font-bold text-[#78aaff]">{stat.label}</p><p className="mt-1 text-xs text-[#aebbd0]">{stat.note}</p></div>)}</div></div></div></section>
+    <section id="results" className="blueprint px-5 py-24 sm:px-8"><div className="mx-auto max-w-7xl"><Eyebrow light>RESULTS THAT MATTER</Eyebrow><div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]"><div><h2 className="text-4xl font-black leading-[.98] tracking-[-.06em] text-white sm:text-5xl">We Don&apos;t Sell Clicks.<br /><span className="text-[#6da2ff]">We Build Sales Opportunities.</span></h2><p className="mt-6 max-w-md text-base leading-7 text-[#b9c6db]">The goal isn&apos;t vanity metrics. It&apos;s more conversations with homeowners who are genuinely considering replacing their windows or doors.</p></div><div className="grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2">{content.stats.map(stat => <div key={stat.label} className="bg-[#0d1829] p-7"><AnimatedValue value={stat.value} /><p className="mt-4 text-sm font-bold text-[#78aaff]">{stat.label}</p><p className="mt-1 text-xs text-[#aebbd0]">{stat.note}</p></div>)}</div></div></div></section>
 
     <section className="bg-white px-5 py-24 sm:px-8"><div className="mx-auto max-w-7xl"><Eyebrow>CLIENT SUCCESS</Eyebrow><div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><h2 className="text-4xl font-black tracking-[-.06em] sm:text-5xl">Hear From Businesses<br />We&apos;ve Helped.</h2><a href="#" className="text-xs font-bold tracking-[.1em] text-[#2564d9]">VIEW OUR REVIEWS <ArrowRight className="ml-1 inline" size={14} /></a></div><div className="mt-10 grid gap-4 md:grid-cols-3">{[0, 1, 2].map(i => <article key={i} className="border border-[#dce5f3] bg-[#f6f8fc] p-7"><span className="text-4xl font-black text-[#2564d9]">“</span><p className="mt-10 text-lg font-bold leading-7 tracking-[-.03em]">Client testimonial will be added here.</p><p className="mt-10 text-xs font-bold tracking-[.12em] text-[#63718a]">VERIFIED CLIENT STORY</p></article>)}</div><p className="mt-5 text-xs text-[#63718a]">Add approved testimonials in <code>data/siteContent.ts</code>; screenshot assets can be placed in <code>public/testimonials</code>.</p></div></section>
 
@@ -87,6 +121,8 @@ export default function Home() {
     <section id="about" className="bg-[#eaf2ff] px-5 py-24 sm:px-8"><div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2 lg:items-center"><div className="relative min-h-[330px] overflow-hidden bg-[#07101f] p-8"><div className="grid-glow absolute inset-0 opacity-30" /><img src="/reach-eyeballs-logo.png" alt="Reach Eyeballs mascot" className="absolute bottom-[-30px] right-[-30px] h-72 w-72 object-contain opacity-95" /><div className="relative w-44 border border-white/20 bg-white/10 p-4 backdrop-blur"><p className="text-[10px] font-bold tracking-[.13em] text-[#8ab5ff]">UK FOCUSED</p><p className="mt-2 text-xl font-black tracking-tight text-white">Built for better local opportunities.</p></div></div><div><Eyebrow>ABOUT REACH EYEBALLS</Eyebrow><h2 className="text-4xl font-black tracking-[-.06em] sm:text-5xl">We Don&apos;t Try to Market Every Industry.</h2><p className="mt-6 text-base leading-7 text-[#526078]">Reach Eyeballs is a UK-focused lead generation agency specialising in helping window and door businesses create a more consistent pipeline of qualified homeowner opportunities.</p><p className="mt-4 text-base leading-7 text-[#526078]">Rather than simply generating clicks or sending unfiltered enquiries, our approach focuses on attracting suitable prospects, qualifying them and helping turn interest into booked sales conversations.</p><div className="mt-7 grid grid-cols-2 gap-3">{['Industry-specific messaging', 'Local homeowner targeting', 'High-ticket project focus', 'Appointment setting'].map(x => <p key={x} className="flex gap-2 text-sm font-bold"><Check size={16} className="shrink-0 text-[#2564d9]" />{x}</p>)}</div></div></div></section>
 
     <section className="px-5 py-24 sm:px-8"><div className="blueprint mx-auto max-w-7xl overflow-hidden p-8 sm:p-14"><Eyebrow light>YOUR NEXT STEP</Eyebrow><div className="grid gap-8 lg:grid-cols-[1.3fr_.7fr] lg:items-end"><div><h2 className="max-w-3xl text-4xl font-black leading-[.97] tracking-[-.07em] text-white sm:text-6xl">Ready to Fill Your Calendar With <span className="text-[#6da2ff]">Better Opportunities?</span></h2><p className="mt-6 max-w-xl text-base leading-7 text-[#c1cce0]">Book a free 30-minute strategy call and discover how Reach Eyeballs can help generate qualified window and door appointments in your area.</p></div><div className="lg:text-right"><Button>BOOK MY FREE STRATEGY CALL</Button><p className="mt-5 text-xs leading-6 text-[#c1cce0]">✓ Free 30-minute consultation &nbsp; ✓ No obligation<br />✓ Custom strategy for your area</p></div></div></div></section>
+
+    <section className="bg-[#eaf2ff] px-5 py-24 sm:px-8"><div className="mx-auto max-w-7xl"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><Eyebrow>WATCH &amp; LEARN</Eyebrow><h2 className="text-4xl font-black tracking-[-.06em] sm:text-5xl">A Closer Look at<br /><span className="text-[#2564d9]">Better Lead Generation.</span></h2></div><p className="max-w-sm text-sm leading-6 text-[#526078]">Practical perspectives for window and door companies ready to build a stronger pipeline.</p></div><div className="mt-12 grid gap-5 lg:grid-cols-2"><article className="overflow-hidden border border-[#cbd8ec] bg-[#07101f] shadow-[0_20px_40px_rgba(7,16,31,.12)]"><video controls playsInline preload="metadata" className="aspect-video w-full bg-black" aria-label="Reach Eyeballs introduction video"><source src="/videos/reach-eyeballs-intro.mp4" type="video/mp4" />Your browser does not support this video.</video><div className="p-6 text-white"><p className="text-[11px] font-bold tracking-[.14em] text-[#8ab5ff]">REACH EYEBALLS</p><h3 className="mt-2 text-xl font-black tracking-[-.04em]">The Reach Eyeballs approach</h3></div></article><article className="overflow-hidden border border-[#cbd8ec] bg-white shadow-[0_20px_40px_rgba(7,16,31,.08)]"><video controls playsInline preload="metadata" className="aspect-video w-full bg-black" aria-label="Are you still relying on window and door referrals in 2026 video"><source src="/videos/window-door-referrals-2026.mp4" type="video/mp4" />Your browser does not support this video.</video><div className="p-6"><p className="text-[11px] font-bold tracking-[.14em] text-[#2564d9]">WINDOW &amp; DOOR GROWTH</p><h3 className="mt-2 text-xl font-black tracking-[-.04em]">Are you still relying on window &amp; door referrals in 2026?</h3></div></article></div></div></section>
 
     <section id="booking" className="border-y border-[#dce5f3] bg-white px-5 py-24 sm:px-8"><div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[.85fr_1.15fr]"><div><Eyebrow>BOOK A FREE STRATEGY CALL</Eyebrow><h2 className="text-4xl font-black tracking-[-.06em] sm:text-5xl">Let&apos;s See If Your Area Is Available.</h2><p className="mt-6 max-w-md text-base leading-7 text-[#526078]">Choose a convenient time for a free strategy call. We&apos;ll talk through your area, current pipeline and whether our approach is right for you.</p><p className="mt-8 text-sm font-bold text-[#2564d9]">We limit the number of companies we work with in each area.</p></div><div className="border border-[#dce5f3] bg-[#f6f8fc] p-6 sm:p-8"><div className="flex items-center gap-3 border-b border-[#dce5f3] pb-5"><CalendarDays className="text-[#2564d9]" /><div><p className="font-black">Book your free strategy call</p><p className="text-xs text-[#63718a]">30 minutes · Online meeting</p></div></div><div className="mt-6 grid grid-cols-3 gap-2">{['Tuesday', 'Wednesday', 'Thursday'].map((day, i) => <button key={day} className={`border p-3 text-left transition ${i === 1 ? 'border-[#2564d9] bg-[#2564d9] text-white' : 'border-[#dce5f3] bg-white hover:border-[#2564d9]'}`}><span className="block text-[10px] font-bold">{day}</span><span className="mt-1 block text-lg font-black">{24 + i}</span></button>)}</div><div className="mt-5 grid gap-2 sm:grid-cols-3">{['10:00 AM', '1:30 PM', '3:00 PM'].map(time => <button key={time} className="border border-[#dce5f3] bg-white px-3 py-3 text-xs font-bold transition hover:border-[#2564d9] hover:text-[#2564d9]">{time}</button>)}</div><a href={`mailto:${content.email}`} className="mt-6 flex items-center justify-center gap-2 bg-[#2564d9] px-5 py-4 text-xs font-bold tracking-[.07em] text-white">BOOK YOUR FREE STRATEGY CALL <ArrowRight size={15} /></a><p className="mt-4 text-center text-[11px] text-[#63718a]">Connect Calendly or GoHighLevel by updating <code>bookingUrl</code> in site content.</p></div></div></section>
 
