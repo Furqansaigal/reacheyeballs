@@ -1,5 +1,5 @@
 import { sites } from '@openai/sites-vite-plugin';
-import tailwindcss from '@tailwindcss/postcss';
+import tailwindcss from '@tailwindcss/vite';
 import vinext from 'vinext';
 import { nitro } from 'nitro/vite';
 import { defineConfig } from 'vite';
@@ -53,12 +53,6 @@ export default defineConfig(async () => {
       });
 
   return {
-    css: {
-      postcss: {
-        plugins: [tailwindcss()],
-      },
-    },
-
     server: isCodexSeatbeltSandbox
       ? {
           watch: {
@@ -71,6 +65,7 @@ export default defineConfig(async () => {
     plugins: [
       vinext(),
       sites(),
+      tailwindcss(),
       deploymentPlugin,
     ],
   };
