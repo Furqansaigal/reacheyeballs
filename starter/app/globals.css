@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@theme inline { --font-sans: Arial, Helvetica, sans-serif; }
+
+:root { --blue: #2564d9; --ink: #07101f; --paper: #f6f8fc; --line: #dce5f3; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+::selection { background: #bcd4ff; color: #07101f; }
+.grid-glow { background-image: linear-gradient(rgba(37,100,217,.08) 1px, transparent 1px), linear-gradient(90deg,rgba(37,100,217,.08) 1px,transparent 1px); background-size: 36px 36px; }
+.blueprint { background: radial-gradient(circle at 70% 15%, rgba(45,109,228,.27), transparent 30%), #07101f; }
+
+/* Hero ambient layers: brand blue (#2564d9), deliberately low-opacity. */
+.hero-shell {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(118deg, rgba(37, 100, 217, .028), transparent 34%),
+    #fff;
+}
+.hero-shell .grid-glow {
+  animation: grid-drift 36s ease-in-out infinite alternate;
+  will-change: transform;
+  z-index: 1;
+}
+.hero-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-orb {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  background: radial-gradient(circle at 36% 38%, rgba(76, 137, 255, .24), rgba(37, 100, 217, .105) 40%, transparent 70%);
+  filter: blur(10px);
+  will-change: transform;
+}
+.hero-orb-copy {
+  top: -16rem;
+  left: -13rem;
+  width: 43rem;
+  height: 43rem;
+  background: radial-gradient(circle at 56% 55%, rgba(37, 100, 217, .12), rgba(104, 153, 255, .055) 42%, transparent 70%);
+  animation: ambient-copy-float 17s ease-in-out infinite alternate;
+}
+.hero-orb-secondary {
+  bottom: -19rem;
+  left: -7rem;
+  width: 31rem;
+  height: 31rem;
+  opacity: .6;
+  animation: ambient-float-reverse 18s ease-in-out infinite alternate;
+}
+.hero-video-ring {
+  background: linear-gradient(135deg, rgba(37,100,217,.9), rgba(135,176,255,.12) 45%, rgba(37,100,217,.5));
+  filter: blur(.5px);
+  animation: halo 3.5s ease-in-out infinite;
+}
+.hero-title { font-size: clamp(2.65rem, 3.7vw, 3.7rem); }
+.cta-title { font-size: clamp(2.25rem, 9vw, 3.75rem); overflow-wrap: anywhere; }
+.status-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.booking-card { box-shadow: 0 20px 60px rgba(7,16,31,.08); }
+
+@keyframes grid-drift { to { transform: translate(14px, -10px) scale(1.025); } }
+@keyframes ambient-float-reverse { to { transform: translate(5rem, -3rem) scale(.9); } }
+@keyframes ambient-copy-float { to { transform: translate(4rem, 2.5rem) scale(1.04); } }
+@keyframes halo { 50% { opacity: .55; transform: scale(1.03); } }
+@keyframes pulse-dot { 50% { opacity: .45; box-shadow: 0 0 0 5px rgba(24,169,87,.13); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+@media (max-width: 639px) {
+  .hero-title { font-size: clamp(2.5rem, 12vw, 3.35rem); letter-spacing: -.065em; }
+  .hero-orb-copy { width: 28rem; height: 28rem; left: -13rem; top: -8rem; }
+  .hero-orb-secondary { width: 22rem; height: 22rem; left: -8rem; bottom: -11rem; }
+
+}
