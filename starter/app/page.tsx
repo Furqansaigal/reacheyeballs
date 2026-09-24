@@ -105,11 +105,18 @@ export default function Home() {
     if (!video) return;
 
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) void video.play().catch(() => undefined);
-    }, { threshold: 0.35 });
+      if (entry.intersectionRatio >= 0.35) {
+        void video.play().catch(() => undefined);
+      } else {
+        video.pause();
+      }
+    }, { threshold: [0, 0.35] });
 
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
   }, []);
 
   useEffect(() => {
@@ -156,7 +163,7 @@ export default function Home() {
           <div className="absolute -right-10 -top-10 h-52 w-52 rounded-full bg-[#2564d9]/20 blur-3xl" />
           <div className="hero-video-ring absolute -inset-3 rounded-[32px]" />
           <div className="absolute -left-32 top-9 z-10 hidden w-40 rounded-2xl border border-white/70 bg-white/90 p-3 shadow-[0_18px_45px_rgba(7,16,31,.16)] backdrop-blur sm:block"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8f9ef] text-[#159947]"><CircleCheck size={15} /></span><p className="text-[10px] font-black tracking-[.08em]">NEW APPOINTMENT</p></div><p className="mt-2 text-xs font-bold text-[#526078]">Qualified homeowner</p><p className="mt-1 text-[10px] text-[#2564d9]">Booked into your calendar</p></div>
-          <video ref={heroVideoRef} autoPlay controls playsInline preload="metadata" className="relative aspect-[9/16] w-full rounded-[24px] border border-[#cbd8ec] bg-black object-cover shadow-[0_32px_80px_rgba(7,16,31,.22)]" aria-label="Are you still relying on window and door referrals in 2026 video">
+          <video ref={heroVideoRef} autoPlay muted controls playsInline preload="metadata" className="relative aspect-[9/16] w-full rounded-[24px] border border-[#cbd8ec] bg-black object-cover shadow-[0_32px_80px_rgba(7,16,31,.22)]" aria-label="Are you still relying on window and door referrals in 2026 video">
             <source src="/videos/window-door-referrals-2026.mp4" type="video/mp4" />
             Your browser does not support this video.
           </video>
